@@ -5,8 +5,12 @@ import json
 def azure_provider():
     "Returns an Azure Quantum provider instance."
 
-    with open(".env/resource.json", "r") as f:
-        resource = json.load(f)
+    try:
+        with open(".env/resource.json", "r") as f:
+            resource = json.load(f)
+    except FileNotFoundError:
+        print("Cannot find resource.json. Please add a 'resource.json' to the folder '.env' under the root directory of the project.")
+        raise
 
     provider = AzureQuantumProvider(
         resource_id=resource["id"],
