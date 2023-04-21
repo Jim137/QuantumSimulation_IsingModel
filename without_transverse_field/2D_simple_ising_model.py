@@ -8,7 +8,7 @@ class parameters(object):
     numbeers_of_x = 200
     numbeers_of_y = 200
     temerature = 2.5
-    time_steps = 100
+    time_steps = 500
     j = 2
 
 par = parameters()
@@ -34,8 +34,9 @@ def ising_step(field, beta = beta):
                 for m in range(m_offset, M, 2):
                     dE = _ising_update(field, n, m, beta)
                     total_energy_list.append(dE)
-    total_energy = np.mean(total_energy_list)
-    return field, total_energy
+    total_mean_energy = np.mean(total_energy_list)
+    total_squared_mean_energy = np.mean(np.array(total_energy_list)**2)
+    return field, total_mean_energy, total_squared_mean_energy
 
 def _ising_update(field, n, m, beta):
     total = 0 #初始化相鄰總能量
@@ -46,14 +47,14 @@ def _ising_update(field, n, m, beta):
                 continue
             total += field[i % N, j % M] #計算相鄰總能量狀態，循環邊界條件
     dH = - par.j * field[n, m] * total #計算 hamitonian 變化
-    if dH >= 0: #系統網能量較低處演化
+    if dH >= 0: #系統往能量較低處演化
         field[n, m] *= -1
     elif np.exp(dH * beta) > np.random.rand(): #根據 boltzmann factor 機率性反轉
         field[n, m] *= -1
     return dH
 
 base = random_spin_field(par.numbeers_of_x, par.numbeers_of_y)
-img, _ = ising_step(base)
+img, _, __ = ising_step(base)
 plt.imshow(display_spin_field(img))
 plt.show()
 
@@ -92,7 +93,7 @@ def plot_mean_energy_with_time_steps(mean_energy_list, save = True):
 images = [random_spin_field(par.numbeers_of_x, par.numbeers_of_y)]
 mean_energy_list = []
 for i in range(par.time_steps):
-    img, mean_energy = ising_step(images[-1])
+    img, mean_energy, _ = ising_step(images[-1])
     images.append(img.copy())
     mean_energy_list.append(mean_energy)
 
@@ -104,29 +105,38 @@ for i in range(par.time_steps):
 # plt.show()
 
 plot_animation(images, save=False)
-plot_mean_energy_with_time_steps(mean_energy_list, save=True)
+plot_mean_energy_with_time_steps(mean_energy_list, save=False)
 
 # find the phase transition
 mean_energy_with_diff_number = []
 mean_magnetic_moment_with_diff_number = []
+mean_capacity_with_diff_number = []
 flag = 0
-size_number_start = 4
-size_number_end = 21
-space = 6
+size_number_start = 5
+size_number_end = 26
+space = 10
+temperature_start = 0.0001
+temperature_end = 5*par.j
+temperature_spot_numbers = 20
 for number in range(size_number_start, size_number_end, space):
     globals()["mean_energy_with_number" + str(number)] = []
     globals()["mean_magnetic_moment_with_number" + str(number)] = []
+    globals()["mean_capacity_with_number" + str(number)] = []
     mean_energy_with_diff_number.append(globals()["mean_energy_with_number" + str(number)])
     mean_magnetic_moment_with_diff_number.append(globals()["mean_magnetic_moment_with_number" + str(number)])
-    for temperature in np.linspace(0.2, 4 * par.j, 4 * par.j * 5):
+    mean_capacity_with_diff_number.append(globals()["mean_capacity_with_number" + str(number)])
+    for temperature in np.linspace(temperature_start, temperature_end, temperature_spot_numbers):
         beta = 1 / temperature
         images = [random_spin_field(number, number)]
         mean_energy_list = []
+        squared_mean_energy_list = []
         for i in range(par.time_steps):
-            img, mean_energy = ising_step(images[-1], beta=beta)
+            img, mean_energy, squared_mean_energy = ising_step(images[-1], beta=beta)
             images.append(img.copy())
             mean_energy_list.append(mean_energy)
+            squared_mean_energy_list.append(squared_mean_energy)
         mean_energy_with_diff_number[flag].append(mean_energy_list[-1])
+        mean_capacity_with_diff_number[flag].append((beta**2)*(squared_mean_energy_list[-1]-mean_energy_list[-1]**2))
         w, h = images[-1].shape
         temp_magnetic_moment_list = []
         for i in range(w):
@@ -137,22 +147,43 @@ for number in range(size_number_start, size_number_end, space):
     flag += 1
 
 plot_used_list = [i for i in range(size_number_start, size_number_end, space)]
+plot_used_list_2 = ['r*', 'gp', 'bd']
+plot_used_list_3 = ['r--', 'g--', 'b--']
 for i in range(len(plot_used_list)):
-    plt.plot(np.linspace(0, 4 * par.j, 4 * par.j * 5), mean_energy_with_diff_number[i],
+    plt.plot(np.linspace(temperature_start, temperature_end, temperature_spot_numbers),
+             mean_energy_with_diff_number[i],plot_used_list_2[i],
              label="size = " + str(plot_used_list[i]**2))
-plt.title("E-T with different size ")
+    plt.plot(np.linspace(temperature_start, temperature_end, temperature_spot_numbers),
+             mean_energy_with_diff_number[i], plot_used_list_3[i])
+plt.title(r"$\langle E \rangle$-T with different size ")
 plt.xlabel("T")
-plt.ylabel("E")
+plt.ylabel(r"$\langle E \rangle$")
 plt.legend()
 plt.savefig("./mean_energy-temperature_with_diff_number.png")
 plt.show()
 
 for i in range(len(plot_used_list)):
-    plt.plot(np.linspace(0, 4 * par.j, 4 * par.j * 5), mean_magnetic_moment_with_diff_number[i],
+    plt.plot(np.linspace(temperature_start, temperature_end, temperature_spot_numbers),
+             mean_capacity_with_diff_number[i],plot_used_list_2[i],
              label="size = " + str(plot_used_list[i]**2))
-plt.title("m-T with different size ")
+    plt.plot(np.linspace(temperature_start, temperature_end, temperature_spot_numbers),
+             mean_capacity_with_diff_number[i], plot_used_list_3[i])
+plt.title(r"$\langle C \rangle$-T with different size ")
 plt.xlabel("T")
-plt.ylabel("m")
+plt.ylabel(r"$\langle C \rangle$")
+plt.legend()
+plt.savefig("./mean_capacity-temperature_with_diff_number.png")
+plt.show()
+
+for i in range(len(plot_used_list)):
+    plt.plot(np.linspace(temperature_start, temperature_end, temperature_spot_numbers),
+             mean_magnetic_moment_with_diff_number[i],plot_used_list_2[i],
+             label="size = " + str(plot_used_list[i]**2))
+    plt.plot(np.linspace(temperature_start, temperature_end, temperature_spot_numbers),
+             mean_magnetic_moment_with_diff_number[i], plot_used_list_3[i])
+plt.title(r"$\langle m \rangle$-T with different size ")
+plt.xlabel("T")
+plt.ylabel(r"$\langle m \rangle$")
 plt.legend()
 plt.savefig("./mean_magnetic_moment-temperature_with_diff_number.png")
 plt.show()
