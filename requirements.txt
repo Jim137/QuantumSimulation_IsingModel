@@ -1,0 +1,8 @@
+imageio
+pyaml
+h5py==2.10.0
+azure-quantum
+babel>=2.9
+Werkzeug>=2.2.2
+colorama>=0.4.5
+azure-quantum[qiskit]
