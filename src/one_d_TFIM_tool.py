@@ -12,16 +12,14 @@ def digit_sum(n):
 def Udisg(Udis,lam,q0,q1,q2,q3):
     k=1
     n=4
-    th1=-np.arccos((lam-np.cos(2*pi*k/n))/np.sqrt((lam-np.cos(2*pi*k/n))**2+np.sin(2*pi*k/n)**2))
+    th1= np.arccos((lam+np.cos(2*pi*k/n))/np.sqrt((lam+np.cos(2*pi*k/n))**2+np.sin(2*pi*k/n)**2))
     B(Udis,q0,q1,th1)
+    Udis.barrier()
     F1(Udis,q0,q1)
     F0(Udis,q2,q3)
-    #fSWAP(Udis,q2,q1) # for ibmqx2
-    #fSWAP(Udis,q1,q2) # for ibmqx4
+    Udis.barrier()
     F0(Udis,q0,q2)
     F0(Udis,q1,q3)
-    #fSWAP(Udis,q2,q1) # for ibmqx2
-    #fSWAP(Udis,q1,q2) # for ibmqx4
 
 def Initial(qc,lam,q0,q1,q2,q3):
     if lam <1:
@@ -61,7 +59,7 @@ def plot_Mag_of_ground_state(vexact, mag_sim):
     plt.clf()
 
 def Initial_time(qc,t,lam,q0,q1,q2,q3):
-    qc.u(-np.arccos(lam/np.sqrt(1+lam**2)),pi/2.+4*t*np.sqrt(1+lam**2),0.,q0)
+    qc.u(np.arccos(lam/np.sqrt(1+lam**2)),pi/2.+4*t*np.sqrt(1+lam**2),0.,q0)
     qc.cx(q0,q1)
 
 def Ising_time(qc,ini,udis,mes,lam,t,q0,q1,q2,q3,c0,c1,c2,c3):
