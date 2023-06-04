@@ -9,17 +9,19 @@ def digit_sum(n):
         sum += int(num_str[i])
     return sum
 
+def DFT(Udis, q0,q1,q2,q3):
+    F1(Udis, q0, q1)
+    F0(Udis, q2, q3)
+    F0(Udis, q0, q2)
+    F0(Udis, q1, q3)
+
 def Udisg(Udis,lam,q0,q1,q2,q3):
     k=1
     n=4
     th1= np.arccos((lam+np.cos(2*pi*k/n))/np.sqrt((lam+np.cos(2*pi*k/n))**2+np.sin(2*pi*k/n)**2))
     B(Udis,q0,q1,th1)
     Udis.barrier()
-    F1(Udis,q0,q1)
-    F0(Udis,q2,q3)
-    Udis.barrier()
-    F0(Udis,q0,q2)
-    F0(Udis,q1,q3)
+    DFT(Udis, q0, q1, q2, q3)
 
 def Initial(qc,lam,q0,q1,q2,q3):
     if lam <1:
