@@ -12,8 +12,15 @@ def digit_sum(n):
 def DFT(Udis, q0,q1,q2,q3):
     F1(Udis, q0, q1)
     F0(Udis, q2, q3)
-    F0(Udis, q0, q2)
-    F0(Udis, q1, q3)
+    # ////////////////
+    fSWAP(Udis, q1, q2)
+    F0(Udis, q0, q1)
+    F0(Udis, q2, q3)
+    # ////////////////
+    # F0(Udis, q0, q2)
+    # F0(Udis, q1, q3)
+    # ////////////////
+    fSWAP(Udis, q1, q2)
 
 def Udisg(Udis,lam,q0,q1,q2,q3):
     k=1
