@@ -1,11 +1,9 @@
 """This module contains some handy gate operations for the quantum circuit."""
-import qiskit
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit.library import *
 import numpy as np
 from qiskit.circuit.quantumregister import Qubit
 from typing import Union
-
 
 
 def CZ(circuit: QuantumCircuit, qubit0: int, qubit1: int):
@@ -93,18 +91,23 @@ def B(circuit: QuantumCircuit, qubit0: Union[int, Qubit], qubit1: Union[int, Qub
     circuit.x(q1)
 
 # Fourier transform gates
-def F2(qp,q0,q1):
-    qp.cx(q0,q1)
-    CH(qp,q1,q0)
-    qp.cx(q0,q1)
-    CZ(qp,q0,q1)
 
-def F0(qp,q0,q1):
-    F2(qp,q0,q1)
 
-def F1(qp,q0,q1):
-    F2(qp,q0,q1)
+def F2(qp, q0, q1):
+    qp.cx(q0, q1)
+    CH(qp, q1, q0)
+    qp.cx(q0, q1)
+    CZ(qp, q0, q1)
+
+
+def F0(qp, q0, q1):
+    F2(qp, q0, q1)
+
+
+def F1(qp, q0, q1):
+    F2(qp, q0, q1)
     qp.sdg(q0)
+
 
 if __name__ == "__main__":
     "Test the module."
